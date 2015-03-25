@@ -2,7 +2,7 @@
 
 class Note < ActiveRecord::Base
 
-  include NoteCustom, Syncable
+  include Versionable, Syncable
 
   attr_writer   :tag_list, :instruction_list
   attr_accessor :external_created_at
@@ -14,21 +14,7 @@ class Note < ActiveRecord::Base
   has_and_belongs_to_many :links
 
   acts_as_commontable
-
   acts_as_taggable_on :tags, :instructions
-
-  has_paper_trail on: [:update],
-                  only: [:title, :body],
-                  if:  proc { |note| note.save_new_version? },
-                  unless: proc { |note| Setting['advanced.versions'] == 'false' || note.has_instruction?('reset') || note.has_instruction?('unversion') },
-                  meta: {
-                    external_updated_at: proc { |note| Note.find(note.id).external_updated_at },
-                    instruction_list: proc { |note| Note.find(note.id).instruction_list },
-                    sequence: proc { |note| note.versions.length + 1 },  # To retrieve by version number
-                    tag_list: proc { |note| Note.find(note.id).tag_list }, # Note.tag_list would store incoming tags
-                    word_count: proc { |note| Note.find(note.id).word_count },
-                    distance: proc { |note| Note.find(note.id).distance }
-                  }
 
   default_scope { order('weight ASC, external_updated_at DESC') }
   # scope :blurbable, -> { where('word_count > ?', (Setting['advanced.blurb_length'].to_i / Setting['advanced.average_word_length'].to_f)) }
@@ -61,14 +47,6 @@ class Note < ActiveRecord::Base
     promotions_home = Setting['style.promotions_home_columns'].to_i * Setting['style.promotions_home_rows'].to_i
     greater_promotions_number = [Setting['style.promotions_footer'].to_i, promotions_home].max
     (all.to_a.keep_if { |note| note.has_instruction?('promote') } + first(greater_promotions_number)).uniq
-  end
-
-  def self.homeable
-    (all.keep_if { |note| note.has_instruction?('home') } + promotable).uniq
-  end
-
-  def self.with_instruction(instruction)
-    all.keep_if { |note| note.has_instruction?(instruction) }
   end
 
   def self.homeable
@@ -289,19 +267,6 @@ class Note < ActiveRecord::Base
       self.external_updated_at = external_created_at if Setting['advanced.always_reset_on_create'] == 'true'
       versions.destroy_all unless versions.empty?
     end
-  end
-
-  def skip_new_version?
-    # Do not save a new version even though and versioning is switched on
-    Setting['advanced.versions'] == 'true' && minor_edit?
-  end
-
-  def minor_edit?
-    # Should we consider all canges in title a major edit?
-    return false if new_record?
-    too_recent = ((external_updated_at - external_updated_at_was) * 1.minutes) < Setting['advanced.version_gap_minutes'].to_i.minutes
-    too_minor = get_real_distance < Setting['advanced.version_gap_distance'].to_i
-    too_recent && too_minor
   end
 
   def update_is_citation?
