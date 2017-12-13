@@ -11,7 +11,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20150824083031) do
+ActiveRecord::Schema.define(version: 20171213111501) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -125,46 +125,50 @@ ActiveRecord::Schema.define(version: 20150824083031) do
   add_index "evernote_notes", ["note_id"], name: "index_cloud_notes_on_note_id", using: :btree
 
   create_table "notes", force: :cascade do |t|
-    t.string   "title",               limit: 255,                 null: false
+    t.string   "title",                   limit: 255,                 null: false
     t.text     "body"
-    t.datetime "created_at",                                      null: false
-    t.datetime "updated_at",                                      null: false
-    t.datetime "external_updated_at",                             null: false
+    t.datetime "created_at",                                          null: false
+    t.datetime "updated_at",                                          null: false
+    t.datetime "external_updated_at",                                 null: false
     t.float    "latitude"
     t.float    "longitude"
     t.float    "altitude"
-    t.string   "lang",                limit: 2
+    t.string   "lang",                    limit: 2
     t.boolean  "active"
-    t.string   "author",              limit: 255
-    t.string   "source",              limit: 255
-    t.string   "source_url",          limit: 255
-    t.string   "source_application",  limit: 255
-    t.string   "last_edited_by",      limit: 255
+    t.string   "author",                  limit: 255
+    t.string   "source",                  limit: 255
+    t.string   "source_url",              limit: 255
+    t.string   "source_application",      limit: 255
+    t.string   "last_edited_by",          limit: 255
     t.boolean  "hide"
-    t.boolean  "is_citation",                     default: false
-    t.boolean  "listable",                        default: true
+    t.boolean  "is_citation",                         default: false
+    t.boolean  "listable",                            default: true
     t.integer  "word_count"
     t.integer  "distance"
-    t.string   "place",               limit: 255
-    t.string   "content_class",       limit: 255
+    t.string   "place",                   limit: 255
+    t.string   "content_class",           limit: 255
     t.text     "introduction"
-    t.string   "feature",             limit: 255
-    t.string   "feature_id",          limit: 255
+    t.string   "feature",                 limit: 255
+    t.string   "feature_id",              limit: 255
     t.boolean  "is_feature"
     t.boolean  "is_section"
     t.boolean  "is_mapped"
     t.boolean  "is_promoted"
     t.integer  "weight"
-    t.integer  "content_type",                    default: 0,     null: false
-    t.string   "url"
-    t.string   "url_author"
+    t.integer  "content_type",                        default: 0,     null: false
+    t.string   "url",                     limit: 255
+    t.string   "url_author",              limit: 255
     t.binary   "url_html"
     t.text     "url_lede"
-    t.string   "url_title"
+    t.string   "url_title",               limit: 255
     t.datetime "url_updated_at"
     t.datetime "url_accessed_at"
     t.string   "url_lang"
     t.string   "url_domain"
+    t.text     "cached_body_html"
+    t.string   "cached_blurb_html"
+    t.string   "cached_headline_html"
+    t.string   "cached_subheadline_html"
   end
 
   create_table "pantographers", force: :cascade do |t|
