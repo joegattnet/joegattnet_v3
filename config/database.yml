@@ -1,12 +1,12 @@
 development:
   adapter: postgresql
   encoding: unicode
-  database: joegattnet_v3
+  database: joegattnet
   pool: 5
   host: localhost
   username: postgres
-  password: password
- 
+  password: itTieni10
+
 test:
   adapter: sqlite3
   database: db/test.sqlite3

@@ -1,7 +1,7 @@
 # encoding: utf-8
 
 class Note < ActiveRecord::Base
-  include NoteCustom, Syncable
+  include NoteCustom, Syncable, Formattable, Blurbable
 
   attr_writer :tag_list, :instruction_list, :keyword_list
   attr_accessor :external_created_at
@@ -50,6 +50,7 @@ class Note < ActiveRecord::Base
   before_save :scan_note_for_references, if: :body_changed?
   # REVIEW: Reinstate this - need to react to change sin the url
   # before_save :reset_url, if: "body_changed? || source_url_changed?"
+  before_save :cache_html_columns
   after_save :scan_note_for_isbns, if: :body_changed?
   after_save :queue_url_decoration
 
@@ -280,6 +281,15 @@ class Note < ActiveRecord::Base
   def scan_note_for_isbns
     # REVIEW: try checking for setting as an unless: after before_save
     Book.grab_isbns(body) unless NB.books_section == 'false' || body.blank?
+  end
+
+  def cache_html_columns
+    unless body.blank?
+      self.cached_url = urlify(id, is_feature, feature, feature_id)
+      self.cached_body_html = bodify(body)
+      self.cached_headline = format_headline(main_title, subtitle)
+      self.cached_blurb_html = format_blurb(cached_headline, clean_body, introduction)
+    end
   end
 
   def body_or_source_or_resource?
