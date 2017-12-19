@@ -65,15 +65,7 @@ class Note < ActiveRecord::Base
   def self.promotable
     promotions_home = NB.promotions_home_columns.to_i * NB.promotions_home_rows.to_i
     greater_promotions_number = [NB.promotions_footer.to_i, promotions_home].max
-    (all.to_a.keep_if { |note| note.has_instruction?('promote') } + first(greater_promotions_number)).uniq
-  end
-
-  def self.homeable
-    (all.keep_if { |note| note.has_instruction?('home') } + promotable).uniq
-  end
-
-  def self.with_instruction(instruction)
-    all.keep_if { |note| note.has_instruction?(instruction) }
+    (all.to_a.keep_if { |note| note.is_promoted } + first(greater_promotions_number)).uniq
   end
 
   def self.homeable
@@ -305,6 +297,7 @@ class Note < ActiveRecord::Base
     update_is_hidable?
     update_content_type
     update_is_listable?
+    update_is_promotable?
     update_is_feature?
     update_is_section?
     update_lang
@@ -347,6 +340,10 @@ class Note < ActiveRecord::Base
 
   def update_is_listable?
     self.listable = !has_instruction?('unlist')
+  end
+
+  def update_is_promotable?
+    self.is_promoted = has_instruction?('promote')
   end
 
   def update_is_hidable?
