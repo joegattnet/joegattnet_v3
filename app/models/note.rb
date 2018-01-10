@@ -208,6 +208,7 @@ class Note < ActiveRecord::Base
 
   def save_new_version?
     return false unless content_type == 'note'
+    return false if external_updated_at.blank?
     return false if external_updated_at_was.blank?
     return false if external_updated_at == external_updated_at_was
     NB.versions == 'true' && ((external_updated_at - external_updated_at_was) > NB.version_gap_minutes.to_i.minutes || get_real_distance > NB.version_gap_distance.to_i)
